@@ -63,6 +63,7 @@
     gap:10px;
     flex-wrap:wrap;
   }
+  .toolbar-left{ display:flex; gap:8px; }
   .zoomctl{ display:flex; gap:6px; }
   .zoomctl button{ width:30px; height:30px; padding:0; font-size:15px; }
   .settings-wrap{ position:relative; }
@@ -112,13 +113,25 @@
   .sphere-outline{ fill:none; stroke:var(--line); stroke-width:1; }
   .edge-land{ stroke:#4A6058; stroke-width:1.3; opacity:0.85; }
   .edge-air{ stroke:var(--route); stroke-width:1; stroke-dasharray:3 3; opacity:0.7; }
+  .edge-sea{ stroke:var(--focus); stroke-width:1; stroke-dasharray:1 4; opacity:0.55; }
+  .edge-closed{ stroke:var(--dead) !important; opacity:0.9 !important; }
   .traveler{ stroke:#0A1210; stroke-width:0.4; opacity:0.9; }
   .traveler-plane{ fill:var(--route); }
-  .traveler-boat{ fill:var(--route); }
+  .traveler-boat{ fill:var(--focus); }
   .traveler-infected{ fill:var(--infected-hi); opacity:1; }
-  .node{ cursor:pointer; stroke:#0A1210; stroke-width:1; transition:filter 0.15s; }
-  .node:hover{ filter:brightness(1.35); }
-  .node-selected{ stroke:var(--focus); stroke-width:2.5; }
+  .traveler-blocked{ fill:none !important; stroke:var(--dead) !important; stroke-width:1.6 !important; opacity:1; }
+  .smoke-particle{ fill:#C9C4B4; }
+  .node{
+    cursor:pointer;
+    fill-opacity:0;
+    stroke-opacity:0;
+    stroke-width:1.4;
+    pointer-events:all;
+    transition:fill-opacity 0.15s, stroke-opacity 0.15s, stroke-width 0.15s;
+  }
+  .node:hover{ fill-opacity:0.4; stroke-opacity:1; stroke-width:2; }
+  .node-selected{ stroke:var(--focus) !important; stroke-width:2.5 !important; stroke-opacity:1 !important; fill-opacity:0.15 !important; }
+  .node-locked{ stroke:var(--dead) !important; stroke-width:2.5 !important; stroke-opacity:1 !important; }
   .node-label{
     font-family:'IBM Plex Mono', monospace;
     font-size:8.5px;
@@ -150,6 +163,7 @@
     background:linear-gradient(90deg, var(--infected-lo), var(--infected-hi));
   }
   .dash-sample{ width:18px; height:0; border-top:1px dashed var(--route); display:inline-block; }
+  .sea-dash-sample{ width:18px; height:0; border-top:1px dotted var(--focus); display:inline-block; }
   .line-sample{ width:18px; height:0; border-top:1.3px solid #4A6058; display:inline-block; }
 
   .panel{
@@ -182,6 +196,16 @@
   .v.cured{ color:var(--focus); }
   .v.points{ color:var(--amber); }
 
+  .trait-list{ max-height:420px; overflow-y:auto; padding-right:4px; }
+  .trait-group-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--route);
+    margin:14px 0 4px;
+  }
+  .trait-group-label:first-child{ margin-top:0; }
   .trait{ display:flex; justify-content:space-between; align-items:center; margin:10px 0; }
   .trait-info{ font-size:12.5px; }
   .trait-name{ font-weight:600; }
@@ -229,15 +253,260 @@
     padding:14px;
     display:none;
   }
+  .winbanner.lose{ color:var(--dead); }
+
+  /* --- Cure meter --- */
+  .cure-wrap{ margin-top:12px; }
+  .cure-bar-track{
+    width:100%; height:10px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .cure-bar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--focus), var(--dead));
+    transition:width 0.4s ease;
+  }
+  .cure-status{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--bone-dim);
+    margin-top:4px;
+  }
+
+  /* --- Full-screen overlays (start / upgrades / info) --- */
+  .screen-overlay{
+    position:fixed; inset:0;
+    background:radial-gradient(ellipse at center, #142320 0%, #060B0A 100%);
+    display:none; align-items:center; justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .screen-overlay.visible{ display:flex; }
+  .screen-header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:20px;
+  }
+  .close-btn{
+    background:transparent; border:1px solid var(--line); color:var(--bone-dim);
+    width:32px; height:32px; border-radius:4px; font-size:14px; cursor:pointer; padding:0;
+  }
+  .close-btn:hover{ border-color:var(--dead); color:var(--dead); }
+  .places-list{ max-height:280px; overflow-y:auto; font-family:'IBM Plex Mono', monospace; font-size:12px; margin-top:8px; }
+  .places-list .place-row{ display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); }
+  .places-list .empty-hint{ font-style:italic; color:var(--bone-dim); }
+  .start-card{
+    max-width:720px;
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:32px;
+  }
+  .start-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:34px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    text-align:center;
+    margin:0 0 4px;
+  }
+  .start-title span{ color:var(--infected-hi); }
+  .start-sub{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--bone-dim);
+    letter-spacing:1px;
+    margin-bottom:28px;
+  }
+  .start-section-label{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:15px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+    margin:0 0 10px;
+  }
+  .pathogen-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .pathogen-card{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px 12px;
+    cursor:pointer;
+    text-align:left;
+    transition:border-color 0.15s, background 0.15s;
+  }
+  .pathogen-card:hover{ border-color:var(--route); }
+  .pathogen-card.selected{ border-color:var(--infected-hi); background:#22322B; }
+  .pathogen-card .p-name{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:18px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .pathogen-card .p-desc{
+    font-size:11.5px;
+    color:var(--bone-dim);
+    line-height:1.4;
+  }
+  .difficulty-row{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .difficulty-btn{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:10px;
+    text-align:center;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--bone);
+    letter-spacing:0.5px;
+  }
+  .difficulty-btn:hover{ border-color:var(--route); }
+  .difficulty-btn.selected{ border-color:var(--amber); background:#2E2419; color:var(--amber); }
+  #beginBtn{
+    width:100%;
+    padding:13px;
+    font-size:14px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+  }
 </style>
 </head>
 <body>
+
+<div id="startScreen" class="screen-overlay visible">
+  <div class="start-card">
+    <div class="start-title">CONTAIN<span>MENT</span></div>
+    <div class="start-sub">GLOBAL PATHOGEN SIMULATION</div>
+
+    <div class="start-section-label">Choose Your Pathogen</div>
+    <div class="pathogen-grid" id="pathogenGrid"></div>
+
+    <div class="start-section-label">Difficulty</div>
+    <div class="difficulty-row" id="difficultyRow"></div>
+
+    <button id="beginBtn" disabled>Select a pathogen and difficulty</button>
+  </div>
+</div>
+
+<div id="upgradeScreen" class="screen-overlay">
+  <div class="start-card">
+    <div class="screen-header">
+      <div class="start-title" style="font-size:24px;">EVOLVE PATHOGEN</div>
+      <button id="closeUpgrades" class="close-btn">✕</button>
+    </div>
+    <div class="trait-list" style="max-height:65vh;">
+      <div class="trait-group-label">Core Traits</div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Transmission <span class="trait-level" id="lvlTransmission">Lv.1</span></div>
+          <div class="trait-desc">Spread speed within &amp; between regions</div>
+        </div>
+        <button id="btnTransmission">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Severity <span class="trait-level" id="lvlSeverity">Lv.1</span></div>
+          <div class="trait-desc">Infection-to-death rate</div>
+        </div>
+        <button id="btnSeverity">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Cure Resistance <span class="trait-level" id="lvlResistance">Lv.1</span></div>
+          <div class="trait-desc">Slows global cure research progress</div>
+        </div>
+        <button id="btnResistance">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Cold Resistance <span class="trait-level" id="lvlColdResistance">Lv.0</span></div>
+          <div class="trait-desc">Counters weakness in cold climates</div>
+        </div>
+        <button id="btnColdResistance">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Heat Resistance <span class="trait-level" id="lvlHeatResistance">Lv.0</span></div>
+          <div class="trait-desc">Counters weakness in hot climates</div>
+        </div>
+        <button id="btnHeatResistance">+1 (cost 2)</button>
+      </div>
+
+      <div class="trait-group-label">Countermeasure Traits</div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Asymptomatic Carriers <span class="trait-level" id="lvlAsymptomatic">Lv.0</span></div>
+          <div class="trait-desc">Delays detection &amp; border closures; eases border blockades</div>
+        </div>
+        <button id="btnAsymptomatic">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Maritime Hardening <span class="trait-level" id="lvlMaritime">Lv.0</span></div>
+          <div class="trait-desc">Bypasses closed ports</div>
+        </div>
+        <button id="btnMaritime">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Aviation Adaptation <span class="trait-level" id="lvlAviation">Lv.0</span></div>
+          <div class="trait-desc">Bypasses grounded airports</div>
+        </div>
+        <button id="btnAviation">+1 (cost 2)</button>
+      </div>
+      <div class="trait">
+        <div class="trait-info">
+          <div class="trait-name">Necrotic Adaptation <span class="trait-level" id="lvlNecrotic">Lv.0</span></div>
+          <div class="trait-desc">Resists the spread penalty from mass cremations</div>
+        </div>
+        <button id="btnNecrotic">+1 (cost 2)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="infoScreen" class="screen-overlay">
+  <div class="start-card">
+    <div class="screen-header">
+      <div class="start-title" style="font-size:24px;">OUTBREAK REPORT</div>
+      <button id="closeInfo" class="close-btn">✕</button>
+    </div>
+    <div class="stat-row"><span>Starting Place</span><span class="v" id="infoStart">-</span></div>
+    <div class="stat-row"><span>Total Population</span><span class="v" id="infoPop">-</span></div>
+    <div class="stat-row"><span>Total Infected</span><span class="v infected" id="infoInfected">-</span></div>
+    <div class="stat-row"><span>Total Killed</span><span class="v dead" id="infoDead">-</span></div>
+    <div class="start-section-label" style="margin-top:18px;">Places Infected</div>
+    <div id="infoPlacesList" class="places-list"></div>
+  </div>
+</div>
 
 <div class="layout">
   <div>
     <div class="mapwrap">
       <div class="maptools">
-        <div style="flex:1"></div>
+        <div class="toolbar-left">
+          <button id="upgradesToggle">🧬 Upgrades</button>
+          <button id="infoToggle">📋 Info</button>
+        </div>
         <div class="settings-wrap">
           <button id="settingsToggle" title="Map settings">⚙ Settings</button>
           <div class="settings-menu" id="settingsMenu">
@@ -259,8 +528,9 @@
         <div class="legend-item"><span class="gradient-bar"></span>Infected (low → high)</div>
         <div class="legend-item"><span class="swatch" style="background:var(--dead)"></span>Heavy deaths</div>
         <div class="legend-item"><span class="line-sample"></span>Land border</div>
-        <div class="legend-item"><span class="dash-sample"></span>Air / sea route</div>
-        <div class="legend-item"><span class="swatch" style="background:var(--route); border-radius:2px;"></span>Traffic</div>
+        <div class="legend-item"><span class="dash-sample"></span>Air route</div>
+        <div class="legend-item"><span class="sea-dash-sample"></span>Sea route</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--dead); border-radius:2px;"></span>Closed route</div>
         <div class="legend-item"><span class="swatch" style="background:var(--infected-hi); border-radius:2px;"></span>Infected transit</div>
       </div>
     </div>
@@ -269,42 +539,17 @@
 
   <div>
     <div class="panel">
-      <h2>Global Status</h2>
-      <div class="stat-row"><span>Total Population</span><span class="v" id="statPop">-</span></div>
-      <div class="stat-row"><span>Infected</span><span class="v infected" id="statInfected">-</span></div>
-      <div class="stat-row"><span>Deceased</span><span class="v dead" id="statDead">-</span></div>
-      <div class="stat-row"><span>Cured</span><span class="v cured" id="statCured">-</span></div>
+      <h2>Vitals</h2>
       <div class="stat-row"><span>Evolution Points</span><span class="v points" id="statPoints">-</span></div>
-    </div>
-
-    <div class="panel">
-      <h2>Evolve Pathogen</h2>
-      <div class="trait">
-        <div class="trait-info">
-          <div class="trait-name">Transmission <span class="trait-level" id="lvlTransmission">Lv.1</span></div>
-          <div class="trait-desc">Spread speed within &amp; between regions</div>
-        </div>
-        <button id="btnTransmission">+1 (cost 2)</button>
-      </div>
-      <div class="trait">
-        <div class="trait-info">
-          <div class="trait-name">Severity <span class="trait-level" id="lvlSeverity">Lv.1</span></div>
-          <div class="trait-desc">Infection-to-death rate</div>
-        </div>
-        <button id="btnSeverity">+1 (cost 2)</button>
-      </div>
-      <div class="trait">
-        <div class="trait-info">
-          <div class="trait-name">Resistance <span class="trait-level" id="lvlResistance">Lv.1</span></div>
-          <div class="trait-desc">Slows natural recovery</div>
-        </div>
-        <button id="btnResistance">+1 (cost 2)</button>
+      <div class="cure-wrap">
+        <div class="cure-bar-track"><div class="cure-bar-fill" id="cureFill"></div></div>
+        <div class="cure-status" id="cureStatus">Cure research: not yet detected</div>
       </div>
     </div>
 
     <div class="panel">
       <h2>Region Detail</h2>
-      <div id="regionDetail"><span class="empty-hint">Click a region on the map, or use the dropdown above it, to inspect it. Click any healthy region to seed the outbreak there.</span></div>
+      <div id="regionDetail"><span class="empty-hint">Click a region on the map to inspect it. Click any healthy region to seed the outbreak there.</span></div>
     </div>
 
     <div class="panel">
@@ -391,7 +636,8 @@ const regionData = [
   { id:"SD", name:"Sudan & South Sudan", pop:57, lat:13, lon:30 },
 ];
 
-// type: "land" (border) spreads more easily, "air" (flight/shipping) less so.
+// type: "land" (border) spreads easily. "air" (flights) and "sea" (shipping)
+// are slower but can be shut down independently by government response.
 const connectionData = [
   ["US","CA","land"], ["US","MX","land"], ["MX","CAM","land"], ["CAM","AND","land"],
   ["AND","BR","land"], ["AND","CL","land"], ["AND","VG","land"], ["BR","AR","land"], ["AR","CL","land"],
@@ -409,38 +655,147 @@ const connectionData = [
   ["WAF","CAF","land"], ["CAF","EAF","land"], ["CAF","SAF","land"], ["CAF","ZZ","land"],
   ["EAF","SD","land"], ["SD","CAF","land"], ["ZZ","SAF","land"], ["GL","CA","land"],
 
-  ["UK","IE","air"], ["UK","FR","air"], ["DE","SC","air"], ["IT","BLK","air"],
+  ["UK","IE","sea"], ["UK","FR","sea"], ["DE","SC","sea"], ["IT","BLK","sea"],
   ["US","UK","air"], ["US","JP","air"], ["US","CN","air"], ["UK","EG","air"], ["FR","WAF","air"],
-  ["IN","GULF","air"], ["IN","EAF","air"], ["CN","AU","air"], ["RU","US","air"],
-  ["GL","IS","air"], ["IS","UK","air"], ["IS","SC","air"], ["AU","NZ","air"],
-  ["CAR","US","air"], ["CAR","VG","air"], ["CAR","MX","air"], ["LK","IN","air"],
-  ["TW","CN","air"], ["TW","PH","air"], ["PH","JP","air"], ["KR","JP","air"],
-  ["ID","PH","air"], ["ID","PNG","air"], ["ID","AU","air"], ["PNG","AU","air"],
-  ["SAF","MG","air"], ["EAF","MG","air"], ["BR","WAF","air"],
+  ["IN","GULF","air"], ["IN","EAF","sea"], ["CN","AU","air"], ["RU","US","air"],
+  ["GL","IS","sea"], ["IS","UK","sea"], ["IS","SC","sea"], ["AU","NZ","air"],
+  ["CAR","US","air"], ["CAR","VG","sea"], ["CAR","MX","sea"], ["LK","IN","sea"],
+  ["TW","CN","sea"], ["TW","PH","sea"], ["PH","JP","air"], ["KR","JP","sea"],
+  ["ID","PH","sea"], ["ID","PNG","sea"], ["ID","AU","sea"], ["PNG","AU","sea"],
+  ["SAF","MG","sea"], ["EAF","MG","sea"], ["BR","WAF","sea"],
 ];
+
+// Maps real-world country names (as used by Natural Earth / world-atlas)
+// to our 60 merged regions, so each region can be drawn as its true
+// combined landmass rather than a marker. Best-effort coverage — a
+// handful of micro-states may not match and will fall back to a
+// simple marker instead of a shape.
+const COUNTRY_TO_REGION = {
+  "united states of america":"US", "united states":"US",
+  "canada":"CA", "greenland":"GL", "mexico":"MX",
+  "guatemala":"CAM", "belize":"CAM", "honduras":"CAM", "el salvador":"CAM", "nicaragua":"CAM", "costa rica":"CAM", "panama":"CAM",
+  "cuba":"CAR", "haiti":"CAR", "dominican rep":"CAR", "dominican republic":"CAR", "jamaica":"CAR", "bahamas":"CAR", "the bahamas":"CAR", "trinidad and tobago":"CAR",
+  "brazil":"BR",
+  "argentina":"AR", "uruguay":"AR", "paraguay":"AR",
+  "chile":"CL",
+  "colombia":"AND", "peru":"AND", "ecuador":"AND", "bolivia":"AND",
+  "venezuela":"VG", "guyana":"VG", "suriname":"VG",
+  "united kingdom":"UK", "ireland":"IE", "france":"FR",
+  "spain":"IB", "portugal":"IB",
+  "germany":"DE",
+  "belgium":"BNL", "netherlands":"BNL", "luxembourg":"BNL",
+  "norway":"SC", "sweden":"SC", "denmark":"SC", "finland":"SC",
+  "italy":"IT",
+  "switzerland":"ALP", "austria":"ALP",
+  "poland":"PL",
+  "greece":"BLK", "albania":"BLK", "serbia":"BLK", "croatia":"BLK", "bosnia and herz":"BLK", "bosnia and herzegovina":"BLK",
+  "north macedonia":"BLK", "macedonia":"BLK", "montenegro":"BLK", "kosovo":"BLK", "bulgaria":"BLK", "romania":"BLK",
+  "slovenia":"BLK", "slovakia":"BLK", "hungary":"BLK", "czechia":"BLK", "czech rep":"BLK", "czech republic":"BLK",
+  "ukraine":"UA",
+  "russia":"RU",
+  "belarus":"BB", "lithuania":"BB", "latvia":"BB", "estonia":"BB",
+  "turkey":"TR",
+  "iceland":"IS",
+  "saudi arabia":"SA",
+  "united arab emirates":"GULF", "qatar":"GULF", "kuwait":"GULF", "bahrain":"GULF", "oman":"GULF", "yemen":"GULF",
+  "iraq":"IQ",
+  "iran":"IR",
+  "israel":"LEV", "palestine":"LEV", "jordan":"LEV", "lebanon":"LEV", "syria":"LEV", "cyprus":"LEV", "n cyprus":"LEV",
+  "egypt":"EG",
+  "morocco":"MAG", "algeria":"MAG", "tunisia":"MAG", "libya":"MAG", "w sahara":"MAG", "western sahara":"MAG",
+  "nigeria":"WAF", "ghana":"WAF", "ivory coast":"WAF", "cote d'ivoire":"WAF", "côte d'ivoire":"WAF", "senegal":"WAF",
+  "mali":"WAF", "guinea":"WAF", "benin":"WAF", "togo":"WAF", "sierra leone":"WAF", "liberia":"WAF", "burkina faso":"WAF",
+  "niger":"WAF", "mauritania":"WAF", "gambia":"WAF", "guinea-bissau":"WAF",
+  "dem rep congo":"CAF", "democratic republic of the congo":"CAF", "congo":"CAF", "republic of congo":"CAF",
+  "cameroon":"CAF", "central african rep":"CAF", "central african republic":"CAF", "gabon":"CAF",
+  "eq guinea":"CAF", "equatorial guinea":"CAF", "chad":"CAF", "angola":"CAF",
+  "kenya":"EAF", "ethiopia":"EAF", "tanzania":"EAF", "uganda":"EAF", "somalia":"EAF", "rwanda":"EAF",
+  "burundi":"EAF", "eritrea":"EAF", "djibouti":"EAF", "somaliland":"EAF",
+  "sudan":"SD", "s sudan":"SD", "south sudan":"SD",
+  "south africa":"SAF", "namibia":"SAF", "botswana":"SAF", "lesotho":"SAF", "eswatini":"SAF", "swaziland":"SAF",
+  "zimbabwe":"ZZ", "zambia":"ZZ", "malawi":"ZZ", "mozambique":"ZZ",
+  "madagascar":"MG",
+  "pakistan":"PK",
+  "afghanistan":"AF",
+  "india":"IN",
+  "kazakhstan":"CAS", "uzbekistan":"CAS", "turkmenistan":"CAS", "kyrgyzstan":"CAS", "tajikistan":"CAS",
+  "nepal":"NP", "bhutan":"NP",
+  "bangladesh":"BD",
+  "myanmar":"MM",
+  "sri lanka":"LK",
+  "china":"CN",
+  "mongolia":"MN",
+  "japan":"JP",
+  "south korea":"KR", "korea":"KR", "north korea":"KR", "dem rep korea":"KR", "republic of korea":"KR",
+  "taiwan":"TW",
+  "thailand":"SEA", "vietnam":"SEA", "cambodia":"SEA", "laos":"SEA",
+  "indonesia":"ID", "malaysia":"ID", "brunei":"ID", "timor-leste":"ID", "east timor":"ID",
+  "philippines":"PH",
+  "papua new guinea":"PNG",
+  "australia":"AU",
+  "new zealand":"NZ",
+};
+function matchRegionForCountry(name){
+  if (!name) return null;
+  const norm = name.toLowerCase().trim().replace(/\./g, "");
+  if (COUNTRY_TO_REGION[norm]) return COUNTRY_TO_REGION[norm];
+  return null;
+}
 
 // Equirectangular projection matched exactly to a 960x480 viewBox,
 // so region markers line up with the real coastline path below.
 function project(lat, lon){
   return { x: (lon + 180) / 360 * 960, y: (90 - lat) / 180 * 480 };
 }
+// Climate derived from latitude — used against a pathogen's weaknesses.
+function climateForLat(lat){
+  const a = Math.abs(lat);
+  if (a > 50) return "cold";
+  if (a < 23.5) return "hot";
+  return "temperate";
+}
 
 const regions = regionData.map(r => {
   const p = project(r.lat, r.lon);
-  return { ...r, x:p.x, y:p.y, infected:0, dead:0, cured:0, links:[] };
+  return { ...r, x:p.x, y:p.y, climate:climateForLat(r.lat), infected:0, dead:0, cured:0, links:[],
+    borderClosed:false, portClosed:false, airportClosed:false, burning:false };
 });
+
+// --- 1b. PATHOGEN TYPES & DIFFICULTY -----------------------------
+// coldWeak/heatWeak are spread multipliers applied in matching climates
+// (1 = no penalty, lower = more crippled). Cold/Heat Resistance traits
+// claw this back over the course of a run.
+const PATHOGENS = {
+  bacteria: { name:"Bacteria", desc:"Balanced grower. Moderate weakness to both cold and hot climates.", coldWeak:0.75, heatWeak:0.75 },
+  virus:    { name:"Virus",    desc:"Mutates fast. Badly crippled in cold climates, thrives elsewhere.", coldWeak:0.45, heatWeak:1.0 },
+  parasite: { name:"Parasite", desc:"Hardy host cycle. Badly crippled in hot climates, thrives elsewhere.", coldWeak:1.0, heatWeak:0.45 },
+};
+const DIFFICULTIES = {
+  easy:   { label:"Easy",   startEP:8, epIncome:2, cureSpeed:0.6, thresholdMult:2.6, metric:"death"  },
+  medium: { label:"Medium", startEP:6, epIncome:1, cureSpeed:1.0, thresholdMult:1.0, metric:"mixed"  },
+  hard:   { label:"Hard",   startEP:4, epIncome:1, cureSpeed:1.6, thresholdMult:0.35, metric:"any"   },
+};
+let pathogenKey = null, difficultyKey = null;
 function regionById(id){ return regions.find(r => r.id === id); }
 connectionData.forEach(([a,b,type]) => {
   regionById(a).links.push({ to:b, type });
   regionById(b).links.push({ to:a, type });
 });
 
-const traits = { transmission:1, severity:1, resistance:1 };
-let evolutionPoints = 6;
+const traits = { transmission:1, severity:1, resistance:1, coldResistance:0, heatResistance:0,
+  asymptomatic:0, maritime:0, aviation:0, necrotic:0 };
+let evolutionPoints = 0;
 let ticks = 0;
 let patientZeroSet = false;
+let patientZeroName = null;
 let gameOver = false;
 let selectedId = null;
+let cureProgress = 0;
+let outbreakDetected = false;
+let militaryEnforced = false;
+let regionShapes = {}; // regionId -> SVG path 'd' string, once real borders load
+const DETECTION_THRESHOLD = 15; // millions infected+dead before the world notices
+const BORDER_BASE = 0.03, PORT_BASE = 0.05, AIRPORT_BASE = 0.07, BURN_BASE = 0.08;
 
 // --- 2. MAP RENDERING -----------------------------------------
 const svg = document.getElementById("map");
@@ -459,11 +814,15 @@ const landLayer = makeLayer("landLayer");
 const edgeLayer = makeLayer("edgeLayer");
 const nodeLayer = makeLayer("nodeLayer");
 const travelerLayer = makeLayer("travelerLayer");
+const smokeLayer = makeLayer("smokeLayer");
 
 async function loadWorldGeometry(){
   try{
-    const world = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json").then(r => r.json());
-    const land = topojson.feature(world, world.objects.land);
+    const [landWorld, countryWorld] = await Promise.all([
+      fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json").then(r => r.json()),
+      fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(r => r.json())
+    ]);
+    const land = topojson.feature(landWorld, landWorld.objects.land);
     const projection = d3.geoEquirectangular()
       .scale(960 / (2 * Math.PI))
       .translate([480, 240]);
@@ -486,7 +845,25 @@ async function loadWorldGeometry(){
     landPath.setAttribute("d", pathGen(land));
     landLayer.appendChild(landPath);
 
+    // group each country's real geometry by which of our 60 regions it's in,
+    // then merge each group into one true combined shape per region.
+    const grouped = {};
+    countryWorld.objects.countries.geometries.forEach(geom => {
+      const name = geom.properties && geom.properties.name;
+      const regionId = matchRegionForCountry(name);
+      if (!regionId) return;
+      (grouped[regionId] = grouped[regionId] || []).push(geom);
+    });
+    Object.keys(grouped).forEach(regionId => {
+      try{
+        const merged = topojson.merge(countryWorld, grouped[regionId]);
+        const d = pathGen(merged);
+        if (d) regionShapes[regionId] = d;
+      } catch(e){ /* leave this region on its fallback marker */ }
+    });
+
     document.getElementById("loadingNote").style.display = "none";
+    drawEdgesAndNodes(); // redraw now that real borders are available
   } catch(err){
     document.getElementById("loadingNote").textContent = "Offline — showing schematic view (no internet for coastline data).";
   }
@@ -506,6 +883,31 @@ function colorForRegion(r){
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 
+function isRegionLocked(r){ return r.borderClosed || r.portClosed || r.airportClosed; }
+
+function createRegionMark(r){
+  const shapeD = regionShapes[r.id];
+  let mark;
+  if (shapeD){
+    mark = document.createElementNS(NS, "path");
+    mark.setAttribute("d", shapeD);
+  } else {
+    mark = document.createElementNS(NS, "circle");
+    mark.setAttribute("cx", r.x); mark.setAttribute("cy", r.y); mark.setAttribute("r", radiusForPop(r.pop));
+  }
+  mark.setAttribute("class", "node" + (r.id === selectedId ? " node-selected" : "") + (isRegionLocked(r) ? " node-locked" : ""));
+  mark.setAttribute("id", "node-" + r.id);
+  const c = colorForRegion(r);
+  mark.setAttribute("fill", c);
+  mark.setAttribute("stroke", c);
+  mark.addEventListener("click", () => handleRegionClick(r));
+
+  const title = document.createElementNS(NS, "title");
+  title.textContent = `${r.name} — ${r.pop.toFixed(r.pop < 1 ? 2 : 0)}M pop`;
+  mark.appendChild(title);
+  return mark;
+}
+
 function drawEdgesAndNodes(){
   edgeLayer.innerHTML = "";
   nodeLayer.innerHTML = "";
@@ -518,7 +920,10 @@ function drawEdgesAndNodes(){
       drawn.add(key);
       const other = regionById(link.to);
       const line = document.createElementNS(NS, "line");
-      line.setAttribute("class", link.type === "land" ? "edge-land" : "edge-air");
+      line.setAttribute("class", "edge-" + link.type);
+      line.setAttribute("data-a", r.id);
+      line.setAttribute("data-b", link.to);
+      line.setAttribute("data-type", link.type);
       line.setAttribute("x1", r.x); line.setAttribute("y1", r.y);
       line.setAttribute("x2", other.x); line.setAttribute("y2", other.y);
       edgeLayer.appendChild(line);
@@ -526,47 +931,100 @@ function drawEdgesAndNodes(){
   });
 
   regions.forEach(r => {
-    const rad = radiusForPop(r.pop);
-    const node = document.createElementNS(NS, "circle");
-    node.setAttribute("class", "node" + (r.id === selectedId ? " node-selected" : ""));
-    node.setAttribute("id", "node-" + r.id);
-    node.setAttribute("cx", r.x); node.setAttribute("cy", r.y); node.setAttribute("r", rad);
-    node.setAttribute("fill", colorForRegion(r));
-    node.addEventListener("click", () => handleRegionClick(r));
-
-    const title = document.createElementNS(NS, "title");
-    title.textContent = `${r.name} — ${r.pop.toFixed(r.pop < 1 ? 2 : 0)}M pop`;
-    node.appendChild(title);
-
-    nodeLayer.appendChild(node);
+    nodeLayer.appendChild(createRegionMark(r));
 
     if (r.pop >= 100 || r.id === selectedId){
       const label = document.createElementNS(NS, "text");
       label.setAttribute("class", "node-label");
-      label.setAttribute("x", r.x); label.setAttribute("y", r.y + rad + 9);
+      label.setAttribute("x", r.x); label.setAttribute("y", r.y + radiusForPop(r.pop) + 9);
       label.textContent = r.name;
       nodeLayer.appendChild(label);
     }
   });
+
+  refreshRouteAndNodeStyles();
 }
 
 function refreshNodeColors(){
   regions.forEach(r => {
     const el = document.getElementById("node-" + r.id);
-    if (el) el.setAttribute("fill", colorForRegion(r));
+    if (el){
+      const c = colorForRegion(r);
+      el.setAttribute("fill", c);
+      el.setAttribute("stroke", c);
+    }
   });
 }
 
-// --- 2b. PLANE / BOAT TRAVELERS ---------------------------------
-// Small icons that fly along air/sea routes. Ambient ones are just
+function refreshRouteAndNodeStyles(){
+  Array.from(edgeLayer.children).forEach(line => {
+    const a = regionById(line.getAttribute("data-a"));
+    const b = regionById(line.getAttribute("data-b"));
+    const type = line.getAttribute("data-type");
+    let closed = false;
+    if (type === "land") closed = a.borderClosed || b.borderClosed;
+    else if (type === "sea") closed = a.portClosed || b.portClosed;
+    else if (type === "air") closed = a.airportClosed || b.airportClosed;
+    line.setAttribute("class", "edge-" + type + (closed ? " edge-closed" : ""));
+  });
+  regions.forEach(r => {
+    const el = document.getElementById("node-" + r.id);
+    if (!el) return;
+    const locked = isRegionLocked(r);
+    el.setAttribute("class", "node" + (r.id === selectedId ? " node-selected" : "") + (locked ? " node-locked" : ""));
+    const title = el.querySelector("title");
+    if (title){
+      const closedParts = [r.borderClosed ? "Border" : null, r.portClosed ? "Port" : null, r.airportClosed ? "Airport" : null].filter(Boolean);
+      title.textContent = `${r.name} — ${r.pop.toFixed(r.pop < 1 ? 2 : 0)}M pop` + (closedParts.length ? ` [${closedParts.join("/")} closed]` : "");
+    }
+  });
+}
+
+// --- 2b. GOVERNMENT RESPONSE HELPERS ------------------------------
+// What signal each difficulty's government watches when deciding to close
+// borders/ports/airports: Easy waits for visible death, Medium reacts to a
+// mix of infection and death, Hard reacts to almost any confirmed case.
+function closureMetric(r, difficulty){
+  const infectedFrac = r.infected / r.pop;
+  const deadFrac = r.dead / r.pop;
+  if (difficulty.metric === "death") return deadFrac;
+  if (difficulty.metric === "mixed") return infectedFrac * 0.6 + deadFrac * 1.3;
+  return infectedFrac + deadFrac;
+}
+
+// Closed routes still let some traffic slip through (smuggling,
+// essential travel); the relevant counter-trait claws back the rest.
+function routeClosureFactor(a, b, type){  if (type === "land"){
+    if (!(a.borderClosed || b.borderClosed)) return 1;
+    return Math.min(1, 0.12 + traits.asymptomatic * 0.15);
+  }
+  if (type === "sea"){
+    if (!(a.portClosed || b.portClosed)) return 1;
+    return Math.min(1, 0.12 + traits.maritime * 0.15);
+  }
+  if (type === "air"){
+    if (!(a.airportClosed || b.airportClosed)) return 1;
+    return Math.min(1, 0.12 + traits.aviation * 0.15);
+  }
+  return 1;
+}
+
+// --- 2c. PLANE / BOAT TRAVELERS ---------------------------------
+// Small icons that fly/sail along air/sea routes. Ambient ones are
 // atmosphere; "infected" ones mark an actual disease crossing.
+// Travelers on a closed route have a chance to visibly turn back.
 function spawnTraveler(fromId, toId, opts = {}){
   const a = regionById(fromId), b = regionById(toId);
   if (!a || !b) return;
-  const isBoat = Math.random() < 0.5;
+  const linkType = opts.linkType || (Math.random() < 0.5 ? "air" : "sea");
+  const isBoat = linkType === "sea";
   const dist = Math.hypot(b.x - a.x, b.y - a.y);
   const durationMs = Math.max(1400, Math.min(6000, (dist / 85) * 1000));
   const angleDeg = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+
+  const factor = routeClosureFactor(a, b, linkType);
+  const blocked = !opts.infected && factor < 1 && Math.random() > factor;
+  const travelFrac = blocked ? (0.35 + Math.random() * 0.25) : 1;
 
   const icon = document.createElementNS(NS, "path");
   const cls = opts.infected ? "traveler traveler-infected" : `traveler ${isBoat ? "traveler-boat" : "traveler-plane"}`;
@@ -577,9 +1035,16 @@ function spawnTraveler(fromId, toId, opts = {}){
   const start = performance.now();
   function frame(now){
     const t = Math.min(1, (now - start) / durationMs);
-    const x = a.x + (b.x - a.x) * t;
-    const y = a.y + (b.y - a.y) * t;
+    const effT = Math.min(t, travelFrac);
+    const x = a.x + (b.x - a.x) * effT;
+    const y = a.y + (b.y - a.y) * effT;
     icon.setAttribute("transform", `translate(${x},${y}) rotate(${isBoat ? 0 : angleDeg})`);
+    if (blocked && t >= travelFrac){
+      icon.setAttribute("class", "traveler traveler-blocked");
+      icon.setAttribute("d", "M -3,-3 L 3,3 M 3,-3 L -3,3");
+      setTimeout(() => icon.remove(), 500);
+      return;
+    }
     if (t < 1){
       requestAnimationFrame(frame);
     } else {
@@ -590,14 +1055,36 @@ function spawnTraveler(fromId, toId, opts = {}){
 }
 
 function spawnAmbientTraveler(){
-  const airLinks = connectionData.filter(c => c[2] === "air");
-  if (airLinks.length === 0) return;
-  const link = airLinks[Math.floor(Math.random() * airLinks.length)];
+  const routeLinks = connectionData.filter(c => c[2] === "air" || c[2] === "sea");
+  if (routeLinks.length === 0) return;
+  const link = routeLinks[Math.floor(Math.random() * routeLinks.length)];
   const reverse = Math.random() < 0.5;
-  spawnTraveler(reverse ? link[1] : link[0], reverse ? link[0] : link[1]);
+  spawnTraveler(reverse ? link[1] : link[0], reverse ? link[0] : link[1], { linkType: link[2] });
 }
 setInterval(spawnAmbientTraveler, 1100);
 spawnAmbientTraveler();
+
+// --- 2d. BURNING BODIES (smoke visual) ---------------------------
+function spawnSmoke(r){
+  const p = document.createElementNS(NS, "circle");
+  p.setAttribute("class", "smoke-particle");
+  p.setAttribute("cx", r.x + (Math.random() * 6 - 3));
+  p.setAttribute("cy", r.y - 4);
+  p.setAttribute("r", 2.2);
+  smokeLayer.appendChild(p);
+  const start = performance.now(), dur = 2000;
+  function frame(now){
+    const t = Math.min(1, (now - start) / dur);
+    p.setAttribute("cy", r.y - 4 - t * 15);
+    p.setAttribute("r", 2.2 + t * 4);
+    p.setAttribute("opacity", (0.5 * (1 - t)).toFixed(2));
+    if (t < 1) requestAnimationFrame(frame); else p.remove();
+  }
+  requestAnimationFrame(frame);
+}
+setInterval(() => {
+  regions.forEach(r => { if (r.burning && Math.random() < 0.5) spawnSmoke(r); });
+}, 700);
 
 // --- 3. ZOOM / PAN ----------------------------------------------
 const viewport = document.getElementById("mapviewport");
@@ -666,6 +1153,7 @@ function handleRegionClick(r){
   if (!patientZeroSet && !gameOver){
     r.infected = Math.max(0.3, r.pop * 0.002);
     patientZeroSet = true;
+    patientZeroName = r.name;
     logEvent(`Patient zero identified in ${r.name}.`);
     pulseNode(r.id);
   }
@@ -675,12 +1163,12 @@ function handleRegionClick(r){
 }
 
 function pulseNode(id){
-  const el = document.getElementById("node-" + id);
-  if (!el) return;
+  const r = regionById(id);
+  if (!r) return;
   const pulse = document.createElementNS(NS, "circle");
   pulse.setAttribute("class", "pulse pulsing");
-  pulse.setAttribute("cx", el.getAttribute("cx"));
-  pulse.setAttribute("cy", el.getAttribute("cy"));
+  pulse.setAttribute("cx", r.x);
+  pulse.setAttribute("cy", r.y);
   pulse.setAttribute("r", 8);
   nodeLayer.appendChild(pulse);
 }
@@ -692,13 +1180,21 @@ function fmt(n){
 
 function renderRegionDetail(r){
   const healthy = Math.max(0, r.pop - r.infected - r.dead - r.cured);
+  const statusBits = [];
+  if (r.borderClosed) statusBits.push("Border closed");
+  if (r.portClosed) statusBits.push("Port closed");
+  if (r.airportClosed) statusBits.push("Airport closed");
+  if (r.burning) statusBits.push("Mass cremations");
+  const statusLine = statusBits.length
+    ? `<div class="stat-row"><span>Status</span><span class="v dead">${statusBits.join(", ")}</span></div>`
+    : "";
   document.getElementById("regionDetail").innerHTML = `
     <div class="region-name">${r.name}</div>
     <div class="stat-row"><span>Population</span><span class="v">${fmt(r.pop)}</span></div>
     <div class="stat-row"><span>Healthy</span><span class="v">${fmt(healthy)}</span></div>
     <div class="stat-row"><span>Infected</span><span class="v infected">${fmt(r.infected)}</span></div>
     <div class="stat-row"><span>Dead</span><span class="v dead">${fmt(r.dead)}</span></div>
-    <div class="stat-row"><span>Cured</span><span class="v cured">${fmt(r.cured)}</span></div>
+    ${statusLine}
   `;
 }
 
@@ -714,12 +1210,18 @@ function logEvent(msg){
 function tick(){
   if (gameOver || !patientZeroSet) return;
   ticks++;
+  const pathogen = PATHOGENS[pathogenKey];
+  const difficulty = DIFFICULTIES[difficultyKey];
 
   regions.forEach(r => {
     const healthy = r.pop - r.infected - r.dead - r.cured;
+    const burnFactor = r.burning ? Math.min(1, 0.5 + traits.necrotic * 0.1) : 1;
     if (r.infected > 0 && healthy > 0){
-      const spreadRate = 0.03 * traits.transmission;
-      const newInfections = Math.min(healthy, r.infected * spreadRate + r.pop * 0.0004);
+      let climateMult = 1;
+      if (r.climate === "cold") climateMult = Math.min(1, pathogen.coldWeak + traits.coldResistance * 0.12);
+      else if (r.climate === "hot") climateMult = Math.min(1, pathogen.heatWeak + traits.heatResistance * 0.12);
+      const spreadRate = 0.03 * traits.transmission * climateMult * burnFactor;
+      const newInfections = Math.min(healthy, r.infected * spreadRate + r.pop * 0.0004 * climateMult * burnFactor);
       r.infected += newInfections;
     }
     if (r.infected > 0){
@@ -727,13 +1229,39 @@ function tick(){
       const newDeaths = r.infected * deathRate;
       r.dead += newDeaths;
       r.infected = Math.max(0, r.infected - newDeaths);
-
-      const recoverRate = Math.max(0.006, 0.035 - 0.007 * traits.resistance);
-      const newCures = r.infected * recoverRate;
-      r.cured += newCures;
-      r.infected = Math.max(0, r.infected - newCures);
     }
   });
+
+  // government response: borders/ports/airports close, bodies burn,
+  // all scaled by difficulty and delayed by counter-traits.
+  if (outbreakDetected){
+    regions.forEach(r => {
+      const metricVal = closureMetric(r, difficulty);
+      const delay = (1 + traits.asymptomatic * 0.18) * difficulty.thresholdMult;
+      if (!r.borderClosed && metricVal > BORDER_BASE * delay){
+        r.borderClosed = true;
+        logEvent(`${r.name} sealed its land borders.`);
+      }
+      if (!r.portClosed && metricVal > PORT_BASE * delay){
+        r.portClosed = true;
+        logEvent(`${r.name} closed its ports.`);
+      }
+      if (!r.airportClosed && metricVal > AIRPORT_BASE * delay){
+        r.airportClosed = true;
+        logEvent(`${r.name} grounded all flights.`);
+      }
+      const deadFrac = r.dead / r.pop;
+      if (!r.burning && deadFrac > BURN_BASE){
+        r.burning = true;
+        logEvent(`Mass cremations begin in ${r.name}.`);
+      }
+    });
+  }
+
+  if (difficulty.label === "Hard" && !militaryEnforced && cureProgress > 60){
+    militaryEnforced = true;
+    logEvent("Military enforcement declared. All transmission routes further restricted.");
+  }
 
   regions.forEach(r => {
     if (r.infected <= 0.05) return;
@@ -742,51 +1270,110 @@ function tick(){
       const otherHealthy = other.pop - other.infected - other.dead - other.cured;
       if (otherHealthy <= 0) return;
       const typeFactor = link.type === "land" ? 1 : 0.4;
-      const crossChance = 0.012 * traits.transmission * typeFactor * (r.infected / r.pop);
+      const closureFactor = routeClosureFactor(r, other, link.type);
+      const militaryFactor = militaryEnforced ? 0.7 : 1;
+      const crossChance = 0.012 * traits.transmission * typeFactor * closureFactor * militaryFactor * (r.infected / r.pop);
       if (Math.random() < crossChance){
         const seed = Math.min(otherHealthy, Math.max(0.2, other.pop * 0.001));
         other.infected += seed;
-        logEvent(`Outbreak crossed ${link.type === "land" ? "the border" : "a travel route"} from ${r.name} to ${other.name}.`);
+        const routeLabel = link.type === "land" ? "the border" : link.type === "sea" ? "a shipping route" : "a flight route";
+        logEvent(`Outbreak crossed ${routeLabel} from ${r.name} to ${other.name}.`);
         pulseNode(other.id);
-        if (link.type === "air") spawnTraveler(r.id, other.id, { infected: true });
+        if (link.type === "air" || link.type === "sea") spawnTraveler(r.id, other.id, { infected: true, linkType: link.type });
       }
     });
   });
 
   if (ticks % 8 === 0){
-    evolutionPoints += 1;
-    logEvent(`Mutation opportunity: +1 evolution point.`);
+    evolutionPoints += difficulty.epIncome;
+    logEvent(`Mutation opportunity: +${difficulty.epIncome} evolution point${difficulty.epIncome > 1 ? "s" : ""}.`);
+  }
+
+  const totals = computeTotals();
+  const awareness = totals.infected + totals.dead;
+  if (!outbreakDetected && awareness > DETECTION_THRESHOLD){
+    outbreakDetected = true;
+    logEvent("Outbreak detected. Global cure research has begun.");
+  }
+  if (outbreakDetected && !gameOver){
+    const urgency = Math.min(1, awareness / totals.pop);
+    const closedCount = regions.filter(isRegionLocked).length;
+    const resistanceFactor = Math.max(0.35, 1 - traits.resistance * 0.09);
+    const cureGain = (0.04 + urgency * 0.35) * difficulty.cureSpeed * (1 + closedCount * 0.005) * resistanceFactor;
+    cureProgress = Math.min(100, cureProgress + cureGain);
+    updateCureMeter();
+    if (cureProgress >= 100){
+      let totalCured = 0;
+      regions.forEach(r => { totalCured += r.infected; r.cured += r.infected; r.infected = 0; });
+      refreshNodeColors();
+      endGame(false, `A CURE HAS BEEN FOUND — ${fmt(totalCured)} treated worldwide`);
+    }
   }
 
   refreshNodeColors();
-  updateGlobalStats();
+  refreshRouteAndNodeStyles();
+  updateGlobalStats(totals);
   if (selectedId) renderRegionDetail(regionById(selectedId));
-  checkWinCondition();
+  if (document.getElementById("infoScreen").classList.contains("visible")) refreshInfoScreen();
+  checkWinCondition(totals);
 }
 
-function updateGlobalStats(){
-  const totals = regions.reduce((acc, r) => {
+function computeTotals(){
+  return regions.reduce((acc, r) => {
     acc.pop += r.pop; acc.infected += r.infected; acc.dead += r.dead; acc.cured += r.cured;
     return acc;
   }, { pop:0, infected:0, dead:0, cured:0 });
+}
 
-  document.getElementById("statPop").textContent = fmt(totals.pop);
-  document.getElementById("statInfected").textContent = fmt(totals.infected);
-  document.getElementById("statDead").textContent = fmt(totals.dead);
-  document.getElementById("statCured").textContent = fmt(totals.cured);
+function updateCureMeter(){
+  document.getElementById("cureFill").style.width = cureProgress.toFixed(1) + "%";
+  document.getElementById("cureStatus").textContent = outbreakDetected
+    ? `Cure research: ${cureProgress.toFixed(1)}%`
+    : "Cure research: not yet detected";
+}
+
+function updateGlobalStats(totals){
+  totals = totals || computeTotals();
   document.getElementById("statPoints").textContent = evolutionPoints;
 
   document.getElementById("btnTransmission").disabled = evolutionPoints < 2;
   document.getElementById("btnSeverity").disabled = evolutionPoints < 2;
   document.getElementById("btnResistance").disabled = evolutionPoints < 2;
+  document.getElementById("btnColdResistance").disabled = evolutionPoints < 2;
+  document.getElementById("btnHeatResistance").disabled = evolutionPoints < 2;
+  document.getElementById("btnAsymptomatic").disabled = evolutionPoints < 2;
+  document.getElementById("btnMaritime").disabled = evolutionPoints < 2;
+  document.getElementById("btnAviation").disabled = evolutionPoints < 2;
+  document.getElementById("btnNecrotic").disabled = evolutionPoints < 2;
 }
 
-function checkWinCondition(){
+function refreshInfoScreen(){
+  const totals = computeTotals();
+  document.getElementById("infoStart").textContent = patientZeroName || "Not yet seeded";
+  document.getElementById("infoPop").textContent = fmt(totals.pop);
+  document.getElementById("infoInfected").textContent = fmt(totals.infected);
+  document.getElementById("infoDead").textContent = fmt(totals.dead);
+  const infectedRegions = regions.filter(r => r.infected > 0.01).sort((a, b) => b.infected - a.infected);
+  const list = document.getElementById("infoPlacesList");
+  list.innerHTML = infectedRegions.length
+    ? infectedRegions.map(r => `<div class="place-row"><span>${r.name}</span><span>${fmt(r.infected)}</span></div>`).join("")
+    : '<div class="empty-hint">No active infections yet.</div>';
+}
+
+function endGame(won, message){
+  gameOver = true;
+  const banner = document.getElementById("winbanner");
+  banner.textContent = message;
+  banner.classList.toggle("lose", !won);
+  banner.style.display = "block";
+  logEvent(message + ".");
+}
+
+function checkWinCondition(totals){
+  totals = totals || computeTotals();
   const allSaturated = regions.every(r => (r.infected + r.dead) / r.pop > 0.9);
-  if (allSaturated){
-    gameOver = true;
-    document.getElementById("winbanner").style.display = "block";
-    logEvent("All regions saturated. Simulation complete.");
+  if (allSaturated && !gameOver){
+    endGame(true, "GLOBAL SATURATION REACHED");
   }
 }
 
@@ -802,13 +1389,86 @@ function spend(trait, cost, label){
 document.getElementById("btnTransmission").addEventListener("click", () => spend("transmission", 2, "Transmission"));
 document.getElementById("btnSeverity").addEventListener("click", () => spend("severity", 2, "Severity"));
 document.getElementById("btnResistance").addEventListener("click", () => spend("resistance", 2, "Resistance"));
+document.getElementById("btnColdResistance").addEventListener("click", () => spend("coldResistance", 2, "ColdResistance"));
+document.getElementById("btnHeatResistance").addEventListener("click", () => spend("heatResistance", 2, "HeatResistance"));
+document.getElementById("btnAsymptomatic").addEventListener("click", () => spend("asymptomatic", 2, "Asymptomatic"));
+document.getElementById("btnMaritime").addEventListener("click", () => spend("maritime", 2, "Maritime"));
+document.getElementById("btnAviation").addEventListener("click", () => spend("aviation", 2, "Aviation"));
+document.getElementById("btnNecrotic").addEventListener("click", () => spend("necrotic", 2, "Necrotic"));
+
+// --- 7b. START SCREEN --------------------------------------------
+function buildStartScreen(){
+  const grid = document.getElementById("pathogenGrid");
+  grid.innerHTML = Object.entries(PATHOGENS).map(([key,p]) => `
+    <div class="pathogen-card" data-key="${key}">
+      <div class="p-name">${p.name}</div>
+      <div class="p-desc">${p.desc}</div>
+    </div>
+  `).join("");
+  grid.querySelectorAll(".pathogen-card").forEach(card => {
+    card.addEventListener("click", () => {
+      grid.querySelectorAll(".pathogen-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      pathogenKey = card.dataset.key;
+      updateBeginBtn();
+    });
+  });
+
+  const diffRow = document.getElementById("difficultyRow");
+  diffRow.innerHTML = Object.entries(DIFFICULTIES).map(([key,d]) => `
+    <div class="difficulty-btn" data-key="${key}">${d.label}</div>
+  `).join("");
+  diffRow.querySelectorAll(".difficulty-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      diffRow.querySelectorAll(".difficulty-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      difficultyKey = btn.dataset.key;
+      updateBeginBtn();
+    });
+  });
+}
+
+function updateBeginBtn(){
+  const btn = document.getElementById("beginBtn");
+  if (pathogenKey && difficultyKey){
+    btn.disabled = false;
+    btn.textContent = `Begin Outbreak — ${PATHOGENS[pathogenKey].name} / ${DIFFICULTIES[difficultyKey].label}`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = "Select a pathogen and difficulty";
+  }
+}
+
+document.getElementById("beginBtn").addEventListener("click", () => {
+  if (!pathogenKey || !difficultyKey) return;
+  evolutionPoints = DIFFICULTIES[difficultyKey].startEP;
+  updateGlobalStats();
+  document.getElementById("startScreen").classList.remove("visible");
+  logEvent(`Outbreak configured: ${PATHOGENS[pathogenKey].name} pathogen, ${DIFFICULTIES[difficultyKey].label} difficulty.`);
+});
+
+buildStartScreen();
+
+document.getElementById("upgradesToggle").addEventListener("click", () => {
+  document.getElementById("upgradeScreen").classList.add("visible");
+});
+document.getElementById("closeUpgrades").addEventListener("click", () => {
+  document.getElementById("upgradeScreen").classList.remove("visible");
+});
+document.getElementById("infoToggle").addEventListener("click", () => {
+  refreshInfoScreen();
+  document.getElementById("infoScreen").classList.add("visible");
+});
+document.getElementById("closeInfo").addEventListener("click", () => {
+  document.getElementById("infoScreen").classList.remove("visible");
+});
 
 // --- 8. BOOT -------------------------------------------------------
 applyViewBox();
 drawEdgesAndNodes();
 loadWorldGeometry();
 updateGlobalStats();
-logEvent("Simulation initialized. Click any region (or use the dropdown) to seed the outbreak.");
+logEvent("Simulation initialized. Click any region to seed the outbreak.");
 setInterval(tick, 1000);
 </script>
 
