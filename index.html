@@ -63,7 +63,21 @@
     gap:10px;
     flex-wrap:wrap;
   }
-  .toolbar-left{ display:flex; gap:8px; }
+  .toolbar-left{ display:flex; gap:8px; align-items:center; }
+  .btn-icon{ width:14px; height:14px; vertical-align:-2px; margin-right:2px; }
+  .day-counter{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--bone-dim);
+    letter-spacing:0.5px;
+    padding:0 4px;
+  }
+  .speedctl{ display:flex; gap:4px; }
+  .speed-btn{
+    border-color:var(--line); color:var(--bone-dim);
+    padding:6px 9px;
+  }
+  .speed-btn.selected{ border-color:var(--amber); color:var(--amber); background:#2E2419; }
   .zoomctl{ display:flex; gap:6px; }
   .zoomctl button{ width:30px; height:30px; padding:0; font-size:15px; }
   .settings-wrap{ position:relative; }
@@ -417,68 +431,68 @@
       <div class="trait-group-label">Core Traits</div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Transmission <span class="trait-level" id="lvlTransmission">Lv.1</span></div>
+          <div class="trait-name">Transmission <span class="trait-level" id="lvlTransmission">Tier 0/3</span></div>
           <div class="trait-desc">Spread speed within &amp; between regions</div>
         </div>
-        <button id="btnTransmission">+1 (cost 2)</button>
+        <button id="btnTransmission">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Severity <span class="trait-level" id="lvlSeverity">Lv.1</span></div>
+          <div class="trait-name">Severity <span class="trait-level" id="lvlSeverity">Tier 0/3</span></div>
           <div class="trait-desc">Infection-to-death rate</div>
         </div>
-        <button id="btnSeverity">+1 (cost 2)</button>
+        <button id="btnSeverity">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Cure Resistance <span class="trait-level" id="lvlResistance">Lv.1</span></div>
+          <div class="trait-name">Cure Resistance <span class="trait-level" id="lvlResistance">Tier 0/3</span></div>
           <div class="trait-desc">Slows global cure research progress</div>
         </div>
-        <button id="btnResistance">+1 (cost 2)</button>
+        <button id="btnResistance">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Cold Resistance <span class="trait-level" id="lvlColdResistance">Lv.0</span></div>
+          <div class="trait-name">Cold Resistance <span class="trait-level" id="lvlColdResistance">Tier 0/3</span></div>
           <div class="trait-desc">Counters weakness in cold climates</div>
         </div>
-        <button id="btnColdResistance">+1 (cost 2)</button>
+        <button id="btnColdResistance">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Heat Resistance <span class="trait-level" id="lvlHeatResistance">Lv.0</span></div>
+          <div class="trait-name">Heat Resistance <span class="trait-level" id="lvlHeatResistance">Tier 0/3</span></div>
           <div class="trait-desc">Counters weakness in hot climates</div>
         </div>
-        <button id="btnHeatResistance">+1 (cost 2)</button>
+        <button id="btnHeatResistance">Tier 1 (cost 2)</button>
       </div>
 
       <div class="trait-group-label">Countermeasure Traits</div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Asymptomatic Carriers <span class="trait-level" id="lvlAsymptomatic">Lv.0</span></div>
+          <div class="trait-name">Asymptomatic Carriers <span class="trait-level" id="lvlAsymptomatic">Tier 0/3</span></div>
           <div class="trait-desc">Delays detection &amp; border closures; eases border blockades</div>
         </div>
-        <button id="btnAsymptomatic">+1 (cost 2)</button>
+        <button id="btnAsymptomatic">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Maritime Hardening <span class="trait-level" id="lvlMaritime">Lv.0</span></div>
+          <div class="trait-name">Maritime Hardening <span class="trait-level" id="lvlMaritime">Tier 0/3</span></div>
           <div class="trait-desc">Bypasses closed ports</div>
         </div>
-        <button id="btnMaritime">+1 (cost 2)</button>
+        <button id="btnMaritime">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Aviation Adaptation <span class="trait-level" id="lvlAviation">Lv.0</span></div>
+          <div class="trait-name">Aviation Adaptation <span class="trait-level" id="lvlAviation">Tier 0/3</span></div>
           <div class="trait-desc">Bypasses grounded airports</div>
         </div>
-        <button id="btnAviation">+1 (cost 2)</button>
+        <button id="btnAviation">Tier 1 (cost 2)</button>
       </div>
       <div class="trait">
         <div class="trait-info">
-          <div class="trait-name">Necrotic Adaptation <span class="trait-level" id="lvlNecrotic">Lv.0</span></div>
+          <div class="trait-name">Necrotic Adaptation <span class="trait-level" id="lvlNecrotic">Tier 0/3</span></div>
           <div class="trait-desc">Resists the spread penalty from mass cremations</div>
         </div>
-        <button id="btnNecrotic">+1 (cost 2)</button>
+        <button id="btnNecrotic">Tier 1 (cost 2)</button>
       </div>
     </div>
   </div>
@@ -490,6 +504,7 @@
       <div class="start-title" style="font-size:24px;">OUTBREAK REPORT</div>
       <button id="closeInfo" class="close-btn">✕</button>
     </div>
+    <div class="stat-row"><span>Current Day</span><span class="v" id="infoDay">-</span></div>
     <div class="stat-row"><span>Starting Place</span><span class="v" id="infoStart">-</span></div>
     <div class="stat-row"><span>Total Population</span><span class="v" id="infoPop">-</span></div>
     <div class="stat-row"><span>Total Infected</span><span class="v infected" id="infoInfected">-</span></div>
@@ -504,8 +519,14 @@
     <div class="mapwrap">
       <div class="maptools">
         <div class="toolbar-left">
-          <button id="upgradesToggle">🧬 Upgrades</button>
+          <button id="upgradesToggle"><img class="btn-icon" src="data:image/png;base64,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" alt=""> Upgrades</button>
           <button id="infoToggle">📋 Info</button>
+          <div class="day-counter" id="dayCounter">Day 0</div>
+          <div class="speedctl">
+            <button class="speed-btn selected" data-speed="1">1x</button>
+            <button class="speed-btn" data-speed="2">2x</button>
+            <button class="speed-btn" data-speed="10">10x</button>
+          </div>
         </div>
         <div class="settings-wrap">
           <button id="settingsToggle" title="Map settings">⚙ Settings</button>
@@ -757,9 +778,15 @@ function climateForLat(lat){
 
 const regions = regionData.map(r => {
   const p = project(r.lat, r.lon);
-  return { ...r, x:p.x, y:p.y, climate:climateForLat(r.lat), infected:0, dead:0, cured:0, links:[],
+  return { ...r, x:p.x, y:p.y, climate:climateForLat(r.lat), asym:0, symp:0, severe:0, dead:0, cured:0, links:[],
     borderClosed:false, portClosed:false, airportClosed:false, burning:false };
 });
+// Total currently sick (any stage) and total ever-counted cases, used throughout.
+function sickOf(r){ return r.asym + r.symp + r.severe; }
+// Spread weight per stage: asymptomatic carriers spread fastest (undetected),
+// severe cases are mostly isolated/hospitalized and barely spread further.
+const SPREAD_WEIGHT = { asym: 1.0, symp: 0.7, severe: 0.15 };
+function contagiousOf(r){ return r.asym * SPREAD_WEIGHT.asym + r.symp * SPREAD_WEIGHT.symp + r.severe * SPREAD_WEIGHT.severe; }
 
 // --- 1b. PATHOGEN TYPES & DIFFICULTY -----------------------------
 // coldWeak/heatWeak are spread multipliers applied in matching climates
@@ -782,10 +809,26 @@ connectionData.forEach(([a,b,type]) => {
   regionById(b).links.push({ to:a, type });
 });
 
-const traits = { transmission:1, severity:1, resistance:1, coldResistance:0, heatResistance:0,
+// --- 1c. TIERED TRAIT TABLES --------------------------------------
+// Every trait has 3 tiers, index 0 = not yet purchased (base value).
+const TIER_COST = [2, 4, 6]; // cost to buy tier 1 / 2 / 3
+const TRANSMISSION_MULT = [1.0, 1.35, 1.75, 2.30];
+const SEVERITY_MULT      = [1.0, 1.40, 1.90, 2.60];
+const CURE_RESIST        = [0, 0.15, 0.30, 0.50];     // fraction cure speed reduced
+const CLIMATE_CLAWBACK   = [0, 0.30, 0.60, 1.00];     // fraction of weakness gap clawed back
+const ASYM_DURATION_BONUS= [0, 0.40, 0.80, 1.50];     // stealth phase stretched
+const ASYM_LAND_BYPASS   = [0.12, 0.25, 0.40, 0.60];
+const ASYM_DETECTION_CUT = [0, 0.10, 0.20, 0.35];
+const MARITIME_BYPASS    = [0.12, 0.30, 0.50, 0.75];
+const AVIATION_BYPASS    = [0.12, 0.30, 0.50, 0.75];
+const NECROTIC_FACTOR    = [0.5, 0.65, 0.82, 1.0];    // burn spread-penalty factor (1 = immune)
+
+const traits = { transmission:0, severity:0, resistance:0, coldResistance:0, heatResistance:0,
   asymptomatic:0, maritime:0, aviation:0, necrotic:0 };
 let evolutionPoints = 0;
 let ticks = 0;
+let simSpeed = 1;
+let tickIntervalId = null, travelerIntervalId = null, smokeIntervalId = null;
 let patientZeroSet = false;
 let patientZeroName = null;
 let gameOver = false;
@@ -874,10 +917,11 @@ function radiusForPop(pop){
 }
 
 function colorForRegion(r){
-  if (r.infected <= 0.001 && r.dead <= 0.001) return "var(--healthy)";
+  const sick = sickOf(r);
+  if (sick <= 0.001 && r.dead <= 0.001) return "var(--healthy)";
   const deadFrac = r.dead / r.pop;
   if (deadFrac > 0.15) return "var(--dead)";
-  const infectedFrac = Math.min(1, (r.infected / r.pop) * 1.6);
+  const infectedFrac = Math.min(1, (sick / r.pop) * 1.6);
   const lo = [154,168,78], hi = [228,232,92];
   const c = lo.map((v,i) => Math.round(v + (hi[i]-v)*infectedFrac));
   return `rgb(${c[0]},${c[1]},${c[2]})`;
@@ -982,29 +1026,36 @@ function refreshRouteAndNodeStyles(){
 
 // --- 2b. GOVERNMENT RESPONSE HELPERS ------------------------------
 // What signal each difficulty's government watches when deciding to close
-// borders/ports/airports: Easy waits for visible death, Medium reacts to a
-// mix of infection and death, Hard reacts to almost any confirmed case.
+// borders/ports/airports. Asymptomatic cases are mostly invisible to
+// governments; symptomatic/severe/dead cases are what actually gets noticed.
 function closureMetric(r, difficulty){
-  const infectedFrac = r.infected / r.pop;
-  const deadFrac = r.dead / r.pop;
-  if (difficulty.metric === "death") return deadFrac;
-  if (difficulty.metric === "mixed") return infectedFrac * 0.6 + deadFrac * 1.3;
-  return infectedFrac + deadFrac;
+  const pop = r.pop;
+  const deadFrac = r.dead / pop;
+  let val;
+  if (difficulty.metric === "death"){
+    val = deadFrac; // Easy: only visible death moves the needle
+  } else if (difficulty.metric === "mixed"){
+    val = (r.symp * 0.6 + r.severe * 1.0 + r.dead * 1.3) / pop; // Normal: asymptomatic excluded
+  } else {
+    val = (r.asym * 0.25 + r.symp * 1.0 + r.severe * 1.2 + r.dead * 1.4) / pop; // Hard: paranoid testing
+  }
+  return val * (1 - ASYM_DETECTION_CUT[traits.asymptomatic]);
 }
 
 // Closed routes still let some traffic slip through (smuggling,
 // essential travel); the relevant counter-trait claws back the rest.
-function routeClosureFactor(a, b, type){  if (type === "land"){
+function routeClosureFactor(a, b, type){
+  if (type === "land"){
     if (!(a.borderClosed || b.borderClosed)) return 1;
-    return Math.min(1, 0.12 + traits.asymptomatic * 0.15);
+    return ASYM_LAND_BYPASS[traits.asymptomatic];
   }
   if (type === "sea"){
     if (!(a.portClosed || b.portClosed)) return 1;
-    return Math.min(1, 0.12 + traits.maritime * 0.15);
+    return MARITIME_BYPASS[traits.maritime];
   }
   if (type === "air"){
     if (!(a.airportClosed || b.airportClosed)) return 1;
-    return Math.min(1, 0.12 + traits.aviation * 0.15);
+    return AVIATION_BYPASS[traits.aviation];
   }
   return 1;
 }
@@ -1061,7 +1112,6 @@ function spawnAmbientTraveler(){
   const reverse = Math.random() < 0.5;
   spawnTraveler(reverse ? link[1] : link[0], reverse ? link[0] : link[1], { linkType: link[2] });
 }
-setInterval(spawnAmbientTraveler, 1100);
 spawnAmbientTraveler();
 
 // --- 2d. BURNING BODIES (smoke visual) ---------------------------
@@ -1082,9 +1132,29 @@ function spawnSmoke(r){
   }
   requestAnimationFrame(frame);
 }
-setInterval(() => {
-  regions.forEach(r => { if (r.burning && Math.random() < 0.5) spawnSmoke(r); });
-}, 700);
+
+// --- 2e. SIMULATION SPEED ----------------------------------------
+// Restarts all timers (sim tick, ambient traffic, smoke) at the
+// current speed multiplier. Tick logic itself never changes — only
+// how often it runs — so the simulation stays accurate at 10x too.
+function applySimSpeed(){
+  if (tickIntervalId) clearInterval(tickIntervalId);
+  if (travelerIntervalId) clearInterval(travelerIntervalId);
+  if (smokeIntervalId) clearInterval(smokeIntervalId);
+  tickIntervalId = setInterval(tick, 1000 / simSpeed);
+  travelerIntervalId = setInterval(spawnAmbientTraveler, 1100 / simSpeed);
+  smokeIntervalId = setInterval(() => {
+    regions.forEach(r => { if (r.burning && Math.random() < 0.5) spawnSmoke(r); });
+  }, 700 / simSpeed);
+}
+document.querySelectorAll(".speed-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    simSpeed = Number(btn.dataset.speed);
+    applySimSpeed();
+  });
+});
 
 // --- 3. ZOOM / PAN ----------------------------------------------
 const viewport = document.getElementById("mapviewport");
@@ -1151,7 +1221,7 @@ window.addEventListener("click", (e) => {
 // --- 5. INTERACTION -------------------------------------------
 function handleRegionClick(r){
   if (!patientZeroSet && !gameOver){
-    r.infected = Math.max(0.3, r.pop * 0.002);
+    r.asym = Math.max(0.3, r.pop * 0.002);
     patientZeroSet = true;
     patientZeroName = r.name;
     logEvent(`Patient zero identified in ${r.name}.`);
@@ -1179,7 +1249,7 @@ function fmt(n){
 }
 
 function renderRegionDetail(r){
-  const healthy = Math.max(0, r.pop - r.infected - r.dead - r.cured);
+  const healthy = Math.max(0, r.pop - sickOf(r) - r.dead - r.cured);
   const statusBits = [];
   if (r.borderClosed) statusBits.push("Border closed");
   if (r.portClosed) statusBits.push("Port closed");
@@ -1192,7 +1262,9 @@ function renderRegionDetail(r){
     <div class="region-name">${r.name}</div>
     <div class="stat-row"><span>Population</span><span class="v">${fmt(r.pop)}</span></div>
     <div class="stat-row"><span>Healthy</span><span class="v">${fmt(healthy)}</span></div>
-    <div class="stat-row"><span>Infected</span><span class="v infected">${fmt(r.infected)}</span></div>
+    <div class="stat-row"><span>Asymptomatic</span><span class="v infected">${fmt(r.asym)}</span></div>
+    <div class="stat-row"><span>Symptomatic</span><span class="v infected">${fmt(r.symp)}</span></div>
+    <div class="stat-row"><span>Severe</span><span class="v infected">${fmt(r.severe)}</span></div>
     <div class="stat-row"><span>Dead</span><span class="v dead">${fmt(r.dead)}</span></div>
     ${statusLine}
   `;
@@ -1202,7 +1274,7 @@ function renderRegionDetail(r){
 function logEvent(msg){
   const log = document.getElementById("log");
   const line = document.createElement("div");
-  line.textContent = `[t+${ticks}] ${msg}`;
+  line.textContent = `[Day ${ticks}] ${msg}`;
   log.prepend(line);
   while (log.children.length > 40) log.removeChild(log.lastChild);
 }
@@ -1212,24 +1284,41 @@ function tick(){
   ticks++;
   const pathogen = PATHOGENS[pathogenKey];
   const difficulty = DIFFICULTIES[difficultyKey];
+  const transmissionMult = TRANSMISSION_MULT[traits.transmission];
+  const severityMult = SEVERITY_MULT[traits.severity];
 
   regions.forEach(r => {
-    const healthy = r.pop - r.infected - r.dead - r.cured;
-    const burnFactor = r.burning ? Math.min(1, 0.5 + traits.necrotic * 0.1) : 1;
-    if (r.infected > 0 && healthy > 0){
+    const healthy = r.pop - sickOf(r) - r.dead - r.cured;
+    const burnFactor = r.burning ? NECROTIC_FACTOR[traits.necrotic] : 1;
+
+    // healthy -> asymptomatic, driven by everyone currently contagious
+    const contagious = contagiousOf(r);
+    if (contagious > 0 && healthy > 0){
       let climateMult = 1;
-      if (r.climate === "cold") climateMult = Math.min(1, pathogen.coldWeak + traits.coldResistance * 0.12);
-      else if (r.climate === "hot") climateMult = Math.min(1, pathogen.heatWeak + traits.heatResistance * 0.12);
-      const spreadRate = 0.03 * traits.transmission * climateMult * burnFactor;
-      const newInfections = Math.min(healthy, r.infected * spreadRate + r.pop * 0.0004 * climateMult * burnFactor);
-      r.infected += newInfections;
+      if (r.climate === "cold"){
+        const w = pathogen.coldWeak;
+        climateMult = Math.min(1, w + (1 - w) * CLIMATE_CLAWBACK[traits.coldResistance]);
+      } else if (r.climate === "hot"){
+        const w = pathogen.heatWeak;
+        climateMult = Math.min(1, w + (1 - w) * CLIMATE_CLAWBACK[traits.heatResistance]);
+      }
+      const spreadRate = 0.03 * transmissionMult * climateMult * burnFactor;
+      const newAsym = Math.min(healthy, contagious * spreadRate + r.pop * 0.0004 * climateMult * burnFactor);
+      r.asym += newAsym;
     }
-    if (r.infected > 0){
-      const deathRate = 0.012 * traits.severity;
-      const newDeaths = r.infected * deathRate;
-      r.dead += newDeaths;
-      r.infected = Math.max(0, r.infected - newDeaths);
-    }
+
+    // stage progression: asymptomatic -> symptomatic -> severe -> dead
+    const onsetRate = 0.16 / (1 + ASYM_DURATION_BONUS[traits.asymptomatic]);
+    const newSymp = r.asym * onsetRate;
+    r.asym -= newSymp; r.symp += newSymp;
+
+    const worsenRate = 0.12 * severityMult;
+    const newSevere = r.symp * worsenRate;
+    r.symp -= newSevere; r.severe += newSevere;
+
+    const deathRate = 0.09 * severityMult;
+    const newDeaths = r.severe * deathRate;
+    r.severe -= newDeaths; r.dead += newDeaths;
   });
 
   // government response: borders/ports/airports close, bodies burn,
@@ -1237,7 +1326,7 @@ function tick(){
   if (outbreakDetected){
     regions.forEach(r => {
       const metricVal = closureMetric(r, difficulty);
-      const delay = (1 + traits.asymptomatic * 0.18) * difficulty.thresholdMult;
+      const delay = difficulty.thresholdMult;
       if (!r.borderClosed && metricVal > BORDER_BASE * delay){
         r.borderClosed = true;
         logEvent(`${r.name} sealed its land borders.`);
@@ -1264,18 +1353,19 @@ function tick(){
   }
 
   regions.forEach(r => {
-    if (r.infected <= 0.05) return;
+    const contagious = contagiousOf(r);
+    if (contagious <= 0.05) return;
     r.links.forEach(link => {
       const other = regionById(link.to);
-      const otherHealthy = other.pop - other.infected - other.dead - other.cured;
+      const otherHealthy = other.pop - sickOf(other) - other.dead - other.cured;
       if (otherHealthy <= 0) return;
       const typeFactor = link.type === "land" ? 1 : 0.4;
       const closureFactor = routeClosureFactor(r, other, link.type);
       const militaryFactor = militaryEnforced ? 0.7 : 1;
-      const crossChance = 0.012 * traits.transmission * typeFactor * closureFactor * militaryFactor * (r.infected / r.pop);
+      const crossChance = 0.012 * transmissionMult * typeFactor * closureFactor * militaryFactor * (contagious / r.pop);
       if (Math.random() < crossChance){
         const seed = Math.min(otherHealthy, Math.max(0.2, other.pop * 0.001));
-        other.infected += seed;
+        other.asym += seed;
         const routeLabel = link.type === "land" ? "the border" : link.type === "sea" ? "a shipping route" : "a flight route";
         logEvent(`Outbreak crossed ${routeLabel} from ${r.name} to ${other.name}.`);
         pulseNode(other.id);
@@ -1290,7 +1380,7 @@ function tick(){
   }
 
   const totals = computeTotals();
-  const awareness = totals.infected + totals.dead;
+  const awareness = totals.symp + totals.severe + totals.dead + totals.asym * 0.1;
   if (!outbreakDetected && awareness > DETECTION_THRESHOLD){
     outbreakDetected = true;
     logEvent("Outbreak detected. Global cure research has begun.");
@@ -1298,18 +1388,22 @@ function tick(){
   if (outbreakDetected && !gameOver){
     const urgency = Math.min(1, awareness / totals.pop);
     const closedCount = regions.filter(isRegionLocked).length;
-    const resistanceFactor = Math.max(0.35, 1 - traits.resistance * 0.09);
+    const resistanceFactor = 1 - CURE_RESIST[traits.resistance];
     const cureGain = (0.04 + urgency * 0.35) * difficulty.cureSpeed * (1 + closedCount * 0.005) * resistanceFactor;
     cureProgress = Math.min(100, cureProgress + cureGain);
     updateCureMeter();
     if (cureProgress >= 100){
       let totalCured = 0;
-      regions.forEach(r => { totalCured += r.infected; r.cured += r.infected; r.infected = 0; });
+      regions.forEach(r => {
+        const sick = sickOf(r);
+        totalCured += sick; r.cured += sick; r.asym = 0; r.symp = 0; r.severe = 0;
+      });
       refreshNodeColors();
       endGame(false, `A CURE HAS BEEN FOUND — ${fmt(totalCured)} treated worldwide`);
     }
   }
 
+  document.getElementById("dayCounter").textContent = "Day " + ticks;
   refreshNodeColors();
   refreshRouteAndNodeStyles();
   updateGlobalStats(totals);
@@ -1320,9 +1414,10 @@ function tick(){
 
 function computeTotals(){
   return regions.reduce((acc, r) => {
-    acc.pop += r.pop; acc.infected += r.infected; acc.dead += r.dead; acc.cured += r.cured;
+    acc.pop += r.pop; acc.asym += r.asym; acc.symp += r.symp; acc.severe += r.severe;
+    acc.dead += r.dead; acc.cured += r.cured;
     return acc;
-  }, { pop:0, infected:0, dead:0, cured:0 });
+  }, { pop:0, asym:0, symp:0, severe:0, dead:0, cured:0 });
 }
 
 function updateCureMeter(){
@@ -1332,31 +1427,39 @@ function updateCureMeter(){
     : "Cure research: not yet detected";
 }
 
+const TRAIT_BUTTONS = ["Transmission","Severity","Resistance","ColdResistance","HeatResistance","Asymptomatic","Maritime","Aviation","Necrotic"];
+const TRAIT_KEYS = { Transmission:"transmission", Severity:"severity", Resistance:"resistance", ColdResistance:"coldResistance",
+  HeatResistance:"heatResistance", Asymptomatic:"asymptomatic", Maritime:"maritime", Aviation:"aviation", Necrotic:"necrotic" };
+
 function updateGlobalStats(totals){
   totals = totals || computeTotals();
   document.getElementById("statPoints").textContent = evolutionPoints;
 
-  document.getElementById("btnTransmission").disabled = evolutionPoints < 2;
-  document.getElementById("btnSeverity").disabled = evolutionPoints < 2;
-  document.getElementById("btnResistance").disabled = evolutionPoints < 2;
-  document.getElementById("btnColdResistance").disabled = evolutionPoints < 2;
-  document.getElementById("btnHeatResistance").disabled = evolutionPoints < 2;
-  document.getElementById("btnAsymptomatic").disabled = evolutionPoints < 2;
-  document.getElementById("btnMaritime").disabled = evolutionPoints < 2;
-  document.getElementById("btnAviation").disabled = evolutionPoints < 2;
-  document.getElementById("btnNecrotic").disabled = evolutionPoints < 2;
+  TRAIT_BUTTONS.forEach(label => {
+    const tier = traits[TRAIT_KEYS[label]];
+    const btn = document.getElementById("btn" + label);
+    if (tier >= 3){
+      btn.disabled = true;
+      btn.textContent = "MAXED";
+    } else {
+      const cost = TIER_COST[tier];
+      btn.disabled = evolutionPoints < cost;
+      btn.textContent = `Tier ${tier + 1} (cost ${cost})`;
+    }
+  });
 }
 
 function refreshInfoScreen(){
   const totals = computeTotals();
+  document.getElementById("infoDay").textContent = "Day " + ticks;
   document.getElementById("infoStart").textContent = patientZeroName || "Not yet seeded";
   document.getElementById("infoPop").textContent = fmt(totals.pop);
-  document.getElementById("infoInfected").textContent = fmt(totals.infected);
+  document.getElementById("infoInfected").textContent = fmt(totals.asym + totals.symp + totals.severe);
   document.getElementById("infoDead").textContent = fmt(totals.dead);
-  const infectedRegions = regions.filter(r => r.infected > 0.01).sort((a, b) => b.infected - a.infected);
+  const infectedRegions = regions.filter(r => sickOf(r) > 0.01).sort((a, b) => sickOf(b) - sickOf(a));
   const list = document.getElementById("infoPlacesList");
   list.innerHTML = infectedRegions.length
-    ? infectedRegions.map(r => `<div class="place-row"><span>${r.name}</span><span>${fmt(r.infected)}</span></div>`).join("")
+    ? infectedRegions.map(r => `<div class="place-row"><span>${r.name}</span><span>${fmt(sickOf(r))}</span></div>`).join("")
     : '<div class="empty-hint">No active infections yet.</div>';
 }
 
@@ -1371,30 +1474,33 @@ function endGame(won, message){
 
 function checkWinCondition(totals){
   totals = totals || computeTotals();
-  const allSaturated = regions.every(r => (r.infected + r.dead) / r.pop > 0.9);
+  const allSaturated = regions.every(r => (sickOf(r) + r.dead) / r.pop > 0.9);
   if (allSaturated && !gameOver){
     endGame(true, "GLOBAL SATURATION REACHED");
   }
 }
 
 // --- 7. TRAIT BUTTONS -------------------------------------------
-function spend(trait, cost, label){
+function spend(trait, label){
+  const tier = traits[trait];
+  if (tier >= 3) return;
+  const cost = TIER_COST[tier];
   if (evolutionPoints < cost) return;
   evolutionPoints -= cost;
   traits[trait] += 1;
-  document.getElementById("lvl" + label).textContent = "Lv." + traits[trait];
-  logEvent(`Evolved: ${label} increased to level ${traits[trait]}.`);
+  document.getElementById("lvl" + label).textContent = `Tier ${traits[trait]}/3`;
+  logEvent(`Evolved: ${label} reached Tier ${traits[trait]}.`);
   updateGlobalStats();
 }
-document.getElementById("btnTransmission").addEventListener("click", () => spend("transmission", 2, "Transmission"));
-document.getElementById("btnSeverity").addEventListener("click", () => spend("severity", 2, "Severity"));
-document.getElementById("btnResistance").addEventListener("click", () => spend("resistance", 2, "Resistance"));
-document.getElementById("btnColdResistance").addEventListener("click", () => spend("coldResistance", 2, "ColdResistance"));
-document.getElementById("btnHeatResistance").addEventListener("click", () => spend("heatResistance", 2, "HeatResistance"));
-document.getElementById("btnAsymptomatic").addEventListener("click", () => spend("asymptomatic", 2, "Asymptomatic"));
-document.getElementById("btnMaritime").addEventListener("click", () => spend("maritime", 2, "Maritime"));
-document.getElementById("btnAviation").addEventListener("click", () => spend("aviation", 2, "Aviation"));
-document.getElementById("btnNecrotic").addEventListener("click", () => spend("necrotic", 2, "Necrotic"));
+document.getElementById("btnTransmission").addEventListener("click", () => spend("transmission", "Transmission"));
+document.getElementById("btnSeverity").addEventListener("click", () => spend("severity", "Severity"));
+document.getElementById("btnResistance").addEventListener("click", () => spend("resistance", "Resistance"));
+document.getElementById("btnColdResistance").addEventListener("click", () => spend("coldResistance", "ColdResistance"));
+document.getElementById("btnHeatResistance").addEventListener("click", () => spend("heatResistance", "HeatResistance"));
+document.getElementById("btnAsymptomatic").addEventListener("click", () => spend("asymptomatic", "Asymptomatic"));
+document.getElementById("btnMaritime").addEventListener("click", () => spend("maritime", "Maritime"));
+document.getElementById("btnAviation").addEventListener("click", () => spend("aviation", "Aviation"));
+document.getElementById("btnNecrotic").addEventListener("click", () => spend("necrotic", "Necrotic"));
 
 // --- 7b. START SCREEN --------------------------------------------
 function buildStartScreen(){
@@ -1469,7 +1575,7 @@ drawEdgesAndNodes();
 loadWorldGeometry();
 updateGlobalStats();
 logEvent("Simulation initialized. Click any region to seed the outbreak.");
-setInterval(tick, 1000);
+applySimSpeed();
 </script>
 
 </body>
